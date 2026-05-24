@@ -60,7 +60,11 @@ load_env_file() {
     # Backward-compatible with legacy .env entries that escaped "$" as "$$".
     value="${value//\$\$/\$}"
     value="$(expand_env_refs "$value")"
-    export "$key=$value"
+
+    # Only export valid shell identifiers to prevent bash errors
+    if [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+      export "$key=$value"
+    fi
   done < "$env_file"
 }
 
