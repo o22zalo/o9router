@@ -1,0 +1,19 @@
+tunnel: 09249669-6f63-492f-a319-8db66901e0e3
+credentials-file: /etc/cloudflared/credentials.json
+
+ingress:
+  - hostname: o9router.dpdns.org
+    service: http://caddy:80
+  - hostname: main.o9router.dpdns.org
+    service: http://caddy:80
+  - hostname: ttyd.o9router.dpdns.org
+    service: http://caddy:80
+  - hostname: dozzle.o9router.dpdns.org
+    service: http://caddy:80
+  - hostname: files.o9router.dpdns.org
+    service: http://caddy:80
+  - hostname: deploy.o9router.dpdns.org
+    service: http://caddy:80
+  - hostname: auth.o9router.dpdns.org
+    service: http://caddy:80
+  - service: http_status:404
