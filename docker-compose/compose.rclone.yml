@@ -1,0 +1,41 @@
+# ================================================================
+#  compose.rclone.yml — rclone sync sidecar
+#  Sync .docker-volumes lên remote khi local/remote khác nhau.
+#
+#  Local làm nguồn sự thật (primary), remote là backup đích.
+#  Config rclone lấy từ base64 trong .env; union remote do rclone config định nghĩa.
+#
+#  Bật qua: ENABLE_RCLONE=true trong .env
+#
+#  Env bắt buộc:
+#    RCLONE_REMOTE_TARGET — vd: remote_store:bucket/data
+#  Env tùy chọn:
+#    RCLONE_SYNC_INTERVAL_SEC, RCLONE_LOG_LEVEL, RCLONE_DRY_RUN,
+#    RCLONE_EXTRA_FLAGS, RCLONE_LOCAL_PATH, 9ROUTER_RCLONE_CONFIG_BASE64
+# ================================================================
+
+services:
+  rclone:
+    container_name: "rclone"
+    profiles: [rclone]
+    image: rclone/rclone:latest
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    env_file:
+      - ./.env
+    environment:
+      RCLONE_SYNC_INTERVAL_SEC: "${RCLONE_SYNC_INTERVAL_SEC:-20}"
+      RCLONE_LOCAL_PATH: "${RCLONE_LOCAL_PATH:-/data}"
+      RCLONE_REMOTE_TARGET: "${RCLONE_REMOTE_TARGET}"
+      RCLONE_CONFIG_PATH: "/config/rclone/rclone.conf"
+      RCLONE_LOG_LEVEL: "${RCLONE_LOG_LEVEL:-NOTICE}"
+      RCLONE_DRY_RUN: "${RCLONE_DRY_RUN:-false}"
+      RCLONE_EXTRA_FLAGS: "${RCLONE_EXTRA_FLAGS:-}"
+      RCLONE_CHECK_FLAGS: "${RCLONE_CHECK_FLAGS:---one-way}"
+      RCLONE_CONFIG_BASE64: "${RCLONE_CONFIG_BASE64:-}"
+    volumes:
+      # Entrypoint script
+      - ./services/rclone/entrypoint.sh:/entrypoint.sh:ro
+      # Mount toàn bộ .docker-volumes làm data source
+      - ${DOCKER_VOLUMES_ROOT:-./.docker-volumes}:/data
+    networks: [app_net]
+    restart: unless-stopped
